@@ -5,6 +5,7 @@ ws.onmessage = (msg) => {
 };
 
 const renderMsg = (data) => {
+  console.log("Entro render message");
   const html = data.map((item) => `<p>${item.author}: ${item.message}  - (TimeStamp: ${item.ts} )</p>`).join(" ");
   document.getElementById("messages").innerHTML = html;
 };

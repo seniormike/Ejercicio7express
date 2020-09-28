@@ -1,4 +1,5 @@
 
+const { response } = require("express");
 /**
  * Imports
  */
@@ -6,13 +7,8 @@ const fs = require("fs");
 const WebSocket = require("ws");
 const ws = new WebSocket("ws://localhost:3000");
 const {messageValidation} = require("../models/message");
-
-/**
- * Messages array
- */
-let messages = [].concat(
-  JSON.parse(fs.readFileSync("./messagesArray.json"))
-);
+const Message = require("../models/messageModelDB");
+let array = [];
 
 /**
  * Method that generates a message body based on the parameters.
@@ -38,12 +34,12 @@ const save = () => {
  * @param {message} message 
  */
 const pushMessage = (message) => {
-  messages.push(makeMessage(message));
-  save();
-  return messages;
+  let msgToPersist = makeMessage(message);
+  Message.create({message: msgToPersist.message, author: msgToPersist.author, ts:msgToPersist.ts}).then((response)=>{
+    return response;
+  });
 };
 
-exports.wsGetMessages = messages;
 exports.wsCreateMessage = pushMessage;
 
 /**
@@ -53,7 +49,12 @@ exports.wsCreateMessage = pushMessage;
  * @param {next} next 
  */
 exports.getAllMessages = (req, res, next) => {
-  res.status(200).send(messages);
+  Message.findAll().then((result) => {
+    console.log(result);
+    res.status(200).send(result);
+  }).catch((err)=>{
+    console.log(err);
+  });
 };
 
 /**
@@ -67,8 +68,15 @@ exports.createMessage = (req, res, next) => {
   if (error){
     return res.status(400).send(error);
   }
-  pushMessage(req.body);
-  res.status(200).send(messages);
+    // Sequelize persistence
+    let msgToPersist = makeMessage(req.body);
+
+    Message.create({message: msgToPersist.message, author: msgToPersist.author, ts:msgToPersist.ts}).then((response)=>{
+      console.log("Entra promesa crear");
+      console.log(response);
+      res.status(200).send(response);
+    });
+  //pushMessage(req.body);
   //Update
   ws.send("");
 };
