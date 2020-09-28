@@ -36,7 +36,7 @@ const save = () => {
 const pushMessage = (message) => {
   let msgToPersist = makeMessage(message);
   Message.create({message: msgToPersist.message, author: msgToPersist.author, ts:msgToPersist.ts}).then((response)=>{
-    return response;
+    console.log(response);
   });
 };
 
